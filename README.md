@@ -1,13 +1,12 @@
-# Enforcing and minitoring resource limits on namespaces with Red Hat OpenShift Advance Management for Kubernetes
+# Enforcing and monitoring resource limits on namespaces with Red Hat OpenShift Advance Management for Kubernetes
 
-This repository demonstrates how to enforce and minitor resource limits on namespaces with Red Hat OpenShift Advance Management for Kubernetes using Policies defined.
+This repository demonstrates how to enforce and monitor resource limits on namespaces with Red Hat OpenShift Advance Management for Kubernetes using Policies defined.
 
 ## Overview
 
-By default, OpenShift do not provide any limits for CPU, memory, number of pods running at the namespace (project) level. Anyway for monitoring and resource management it's important to provide resource management at the deployment level as well as at the namespace level.
-With this repo we will show you how to do that.
+By default, OpenShift do not provide any limits for CPU, memory, number of pods running at the namespace (project) level untill configured. Anyway best practices prove that monitoring and resource management is important to provide resource management at the deployment level as well as at the namespace level. With this repo we will show you how to do that.
 
-You can limit many resources with a Kubernetes ResourceQuota policy. 
+With Kubernetes ResourceQuota policy you can easily limit many important resources.
 Commonly used resource types include:
 
 ```sh
@@ -79,7 +78,7 @@ run the last script to manually apply missing quotas for `goonline-dev`, `goonli
 ```sh
 ./02-apply-policies.sh
 ```
-with above we satisfy `monitor-namespaces-resourcequota` policy and therefore it will not complain for violations now
+With above we satisfy `monitor-namespaces-resourcequota` policy and therefore it will not complain for violations anymore.
 
 ![screenshot](images/6.png)
 
