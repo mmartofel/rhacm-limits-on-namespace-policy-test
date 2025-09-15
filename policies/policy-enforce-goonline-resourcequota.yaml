@@ -1,0 +1,87 @@
+# You can limit many resources with a Kubernetes ResourceQuota policy. 
+# Commonly used resource types include:
+#
+#  cpu: Total CPU cores across all pods in the namespace.
+#  memory: Total memory across all pods in the namespace.
+#  pods: Total number of pods in the namespace.
+#  services: Number of services.
+#  replicationcontrollers: Number of replication controllers.
+#  secrets: Number of secrets.
+#  configmaps: Number of configmaps.
+#  persistentvolumeclaims: Number of PVCs.
+#  requests.cpu: Total requested CPU across all pods.
+#  requests.memory: Total requested memory across all pods.
+#  limits.cpu: Total CPU limit across all pods.
+#  limits.memory: Total memory limit across all pods.
+#  services.loadbalancers: Number of LoadBalancer services.
+#  services.nodeports: Number of NodePort services.
+#  count/<resource>.<group>: Number of custom resources (e.g., count/jobs.batch).
+#
+# You can find the full list in the Kubernetes ResourceQuota documentation.
+# https://kubernetes.io/docs/concepts/policy/resource-quotas/#resource-quota-per-resource-type
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: enforce-goonline-resourcequota
+  namespace: open-cluster-management
+  annotations:
+    policy.open-cluster-management.io/description: Policy enforces quota of 1CPU, 1GB of RAM and up to 5 pods for goonline namespace
+    policy.open-cluster-management.io/standards: CLUSTER-RESOURCES
+    policy.open-cluster-management.io/categories: RESOURCE-ALOCATION
+    policy.open-cluster-management.io/controls: RESOURCE-MANAGEMENT
+spec:
+  disabled: false
+  policy-templates:
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: goonline-resourcequota
+        spec:
+          namespaceSelector:
+            include:
+              - goonline
+          object-templates:
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: v1
+                kind: ResourceQuota
+                metadata:
+                  name: goonline-cpu-mem-quota
+                  namespace: goonline
+                spec:
+                  hard:
+                    cpu: "1"
+                    memory: 1Gi
+                    pods: "5"
+          remediationAction: enforce
+          severity: high
+  remediationAction: enforce
+---
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
+metadata:
+  name: enforce-goonline-resourcequota-placement
+  namespace: open-cluster-management
+spec:
+  clusterSets:
+    - default
+  tolerations:
+    - key: cluster.open-cluster-management.io/unreachable
+      operator: Exists
+    - key: cluster.open-cluster-management.io/unavailable
+      operator: Exists
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PlacementBinding
+metadata:
+  name: enforce-goonline-resourcequota-placement-binding
+  namespace: open-cluster-management
+placementRef:
+  name: enforce-goonline-resourcequota-placement
+  kind: Placement
+  apiGroup: cluster.open-cluster-management.io
+subjects:
+  - name: enforce-goonline-resourcequota
+    kind: Policy
+    apiGroup: policy.open-cluster-management.io

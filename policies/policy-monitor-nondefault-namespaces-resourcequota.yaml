@@ -1,0 +1,74 @@
+# Monitor all non-default namespaces for ResourceQuota
+# this policy doesnt enforce anything, just checks for ResourceQuota presence
+# excludes default, kube-system, kube-public, kube-node-lease, openshift-*, openshift, open-cluster-*, multicluster-engine, local-cluster, hive, hypershift namespaces
+
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: monitor-namespaces-resourcequota
+  namespace: open-cluster-management
+  annotations:
+    policy.open-cluster-management.io/description: Policy checks all non-default namespaces for ResourceQuota
+    policy.open-cluster-management.io/standards: CLUSTER-RESOURCES
+    policy.open-cluster-management.io/categories: RESOURCE-ALOCATION
+    policy.open-cluster-management.io/controls: RESOURCE-MANAGEMENT
+spec:
+  remediationAction: inform
+  disabled: false
+  policy-templates:
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: namespaces-resourcequota
+        spec:
+          remediationAction: inform
+          severity: medium
+          namespaceSelector:
+            exclude:
+              - default*
+              - kube-system
+              - kube-public
+              - kube-node-lease
+              - openshift-*
+              - openshift
+              - open-cluster-*
+              - multicluster-engine
+              - local-cluster
+              - hive
+              - hypershift
+            include:
+              - '*'
+          object-templates:
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: v1
+                kind: ResourceQuota
+---
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
+metadata:
+  name: monitor-namespaces-resourcequota-placement
+  namespace: open-cluster-management
+spec:
+  clusterSets:
+    - default
+  tolerations:
+    - key: cluster.open-cluster-management.io/unreachable
+      operator: Exists
+    - key: cluster.open-cluster-management.io/unavailable
+      operator: Exists
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PlacementBinding
+metadata:
+  name: monitor-nondefault-namespaces-resourcequota-binding
+  namespace: open-cluster-management
+placementRef:
+  name: monitor-namespaces-resourcequota-placement
+  kind: Placement
+  apiGroup: cluster.open-cluster-management.io
+subjects:
+  - name: monitor-namespaces-resourcequota
+    kind: Policy
+    apiGroup: policy.open-cluster-management.io
