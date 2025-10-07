@@ -37,6 +37,7 @@ spec:
               - local-cluster
               - hive
               - hypershift
+              - aap
             include:
               - '*'
           object-templates:
